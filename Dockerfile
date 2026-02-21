@@ -16,9 +16,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Pre-download the local model so it's baked into the Docker image
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')"
 
 # Expose FastAPI port
 EXPOSE 7860
 
 # Run FastAPI
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
