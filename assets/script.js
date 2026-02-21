@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form Submit
     searchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const query = queryInput.value.trim();
         if (!query) return;
 
@@ -48,8 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.detail || 'حدث خطأ أثناء الاتصال بالخادم');
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || 'حدث خطأ أثناء الاتصال بالخادم');
+                } else {
+                    const text = await response.text();
+                    console.error("Non-JSON Server Error:", text);
+                    if (response.status === 504 || response.status === 503) {
+                        throw new Error("تأخر الخادم في الاستجابة (جاري تهيئة مساحة HuggingFace). يرجى المحاولة مرة أخرى.");
+                    }
+                    throw new Error(`خطأ في الخادم (الكود ${response.status}) - يرجى الانتظار والمحاولة لاحقاً.`);
+                }
             }
 
             const data = await response.json();
@@ -72,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         results.forEach((result, index) => {
             const diffConfig = DIFFICULTY_LEVELS[result.difficulty] || DIFFICULTY_LEVELS[2];
             const delay = index * 0.1; // Staggered animation
-            
+
             const card = document.createElement('div');
             card.className = 'result-card';
             card.style.animationDelay = `${delay}s`;

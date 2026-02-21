@@ -12,6 +12,15 @@ from tafsir_mcp import get_tafsir
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Pre-download the model during server boot so the first request doesn't timeout
+try:
+    logger.info("Pre-downloading HF model during boot...")
+    from sentence_transformers import SentenceTransformer
+    SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    logger.info("Model ready!")
+except Exception as e:
+    logger.warning(f"Could not pre-download model: {e}")
+
 app = FastAPI(title="Tafsir Search API")
 
 # Allow CORS for HuggingFace Spaces
@@ -54,8 +63,11 @@ if os.path.isdir(assets_dir):
 # Serve index.html at root
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="API route not found")
+        
     path_to_file = os.path.join(base_dir, full_path)
-    if os.path.isfile(path_to_file) and not full_path.startswith("api/"):
+    if os.path.isfile(path_to_file):
         return FileResponse(path_to_file)
     return FileResponse(os.path.join(base_dir, "index.html"))
 
