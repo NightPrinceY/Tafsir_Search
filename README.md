@@ -3,7 +3,7 @@ title: Tafsir Search
 emoji: 😻
 colorFrom: yellow
 colorTo: gray
-sdk: static
+sdk: docker
 pinned: false
 license: mit
 ---
