@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+numpy
+faiss-cpu
+rank-bm25
+sentence-transformers
+cachetools
+python-dotenv
